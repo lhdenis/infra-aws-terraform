@@ -1,11 +1,5 @@
-variable "region" {
-  description = "Région AWS"
+variable "aws_region" {
+  description = "Région AWS cible"
   type        = string
-  default     = "eu-west-3"
-}
-
-variable "cluster_name" {
-  description = "cluster name"
-  type        = string  
-  default = "cluster"
+  default     = "eu-west-3" # Paris
 }
