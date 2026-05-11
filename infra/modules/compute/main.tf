@@ -44,18 +44,6 @@ resource "aws_lb_target_group" "target_group" {
 }
 
 //////////////////////////////////////////////////////////////////
-/////////////////////// Security Groups //////////////////////////
-//////////////////////////////////////////////////////////////////
-
-resource "aws_vpc_security_group_ingress_rule" "lb_sg" {
-  security_group_id = aws_security_group.allow_tls.id
-  cidr_ipv4         = aws_vpc.main.cidr_block
-  from_port         = 443
-  ip_protocol       = "tcp"
-  to_port           = 443
-}
-
-//////////////////////////////////////////////////////////////////
 ///////////////////////////// ECS ////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
@@ -92,6 +80,39 @@ resource "aws_ecs_service" "ecs_service" {
   }
 }
 
+# service_connect_configuration {
+#     enabled   = true
+#     namespace = aws_service_discovery_http_namespace.example.arn
+
+#     log_configuration {
+#       log_driver = "awslogs"
+#       options = {
+#         "awslogs-group"         = aws_cloudwatch_log_group.example.name
+#         "awslogs-region"        = data.aws_region.current.region
+#         "awslogs-stream-prefix" = "service-connect"
+#       }
+#     }
+
+#     access_log_configuration {
+#       format                   = "TEXT"
+#       include_query_parameters = "ENABLED"
+#     }
+
+#     service {
+#       port_name      = "http"
+#       discovery_name = "example"
+
+#       client_alias {
+#         dns_name = "example"
+#         port     = 8080
+#       }
+#     }
+#   }
+
+# resource "aws_cloudwatch_log_group" "example" {
+#   name = "/ecs/example/service-connect"
+# }
+
 resource "aws_ecs_task_definition" "task_definition" {
   family = "task_definition"
   container_definitions = jsonencode([
@@ -104,20 +125,7 @@ resource "aws_ecs_task_definition" "task_definition" {
       portMappings = [
         {
           containerPort = 80
-          hostPort      = 80
-        }
-      ]
-    },
-    {
-      name      = "second"
-      image     = "service-second"
-      cpu       = 10
-      memory    = 256
-      essential = true
-      portMappings = [
-        {
-          containerPort = 443
-          hostPort      = 443
+          hostPort      = 8080
         }
       ]
     }
