@@ -11,19 +11,16 @@ module "networking" {
 }
 
 module "compute" {
-  source = "./modules/compute"
-
-  # project_name      = "mon-projet"
-  # environment       = "dev"
-  # aws_region        = var.aws_region
-  # vpc_id            = module.networking.vpc_id
-  # public_subnet_ids = module.networking.public_subnet_ids
-  # private_subnet_ids = module.networking.private_subnet_ids
-  # sg_alb_id         = module.networking.sg_alb_id
-  # sg_ecs_id         = module.networking.sg_ecs_id
-  # container_image   = "nginx:latest"
-  # container_port    = 80
-  # task_cpu          = 256
-  # task_memory       = 512
-  # desired_count     = 1
+  source             = "./modules/compute"
+  vpc_id             = module.networking.vpc_id
+  sg_alb_id          = module.networking.sg_alb_id
+  sg_ecs_id          = module.networking.sg_ecs_id
+  public_subnet_ids  = module.networking.public_subnet_ids
+  private_subnet_ids = module.networking.private_subnet_ids
 }
+  
+  # project_name       = var.project_name
+  # environment        = var.environment
+  # aws_region         = var.aws_region
+  # vpc_id             = module.networking.vpc_id
+ 

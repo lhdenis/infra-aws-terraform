@@ -75,7 +75,7 @@ resource "aws_route_table_association" "public" {
 }
 
 # Security Group — ALB (load balancer)
-resource "aws_security_group" "alb_sg" {
+resource "aws_security_group" "alb" {
   name        = "${var.project_name}-sg-alb-${var.environment}"
   description = "Autorise le trafic HTTP/HTTPS entrant depuis internet"
   vpc_id      = aws_vpc.main.id

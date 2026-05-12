@@ -6,16 +6,10 @@ resource "aws_lb" "lb" {
   name               = "lb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.lb_sg.id]
-  subnets            = [for subnet in aws_subnet.public : subnet.id]
+  security_groups    = [var.sg_alb_id]
+  subnets            = var.public_subnet_ids
 
   enable_deletion_protection = true
-
-  access_logs {
-    bucket  = aws_s3_bucket.lb_logs.id
-    prefix  = "test-lb"
-    enabled = true
-  }
 
   tags = {
     Environment = "production"
@@ -31,7 +25,7 @@ resource "aws_lb_listener" "lb-listener" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.front_end.arn
+    target_group_arn = aws_lb_target_group.target_group.arn
   }
 }
 
@@ -40,7 +34,7 @@ resource "aws_lb_target_group" "target_group" {
   port        = 80
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = var.vpc_id
 }
 
 //////////////////////////////////////////////////////////////////
@@ -59,7 +53,7 @@ resource "aws_ecs_cluster" "ecs-cluster" {
 resource "aws_ecs_service" "ecs_service" {
   name            = "ecs-service"
   cluster         = aws_ecs_cluster.ecs-cluster.id
-  task_definition = aws_ecs_task_definition.mongo.arn
+  task_definition = aws_ecs_task_definition.task_definition.arn
   desired_count   = 3
   depends_on      = [aws_iam_role_policy.foo]
 
