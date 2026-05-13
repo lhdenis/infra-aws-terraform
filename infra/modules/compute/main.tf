@@ -55,7 +55,7 @@ resource "aws_ecs_service" "ecs_service" {
   cluster         = aws_ecs_cluster.ecs-cluster.id
   task_definition = aws_ecs_task_definition.task_definition.arn
   desired_count   = 3
-  depends_on      = [aws_iam_role_policy.foo]
+  depends_on      = [aws_iam_role_policy.ecs_policy]
 
   ordered_placement_strategy {
     type  = "binpack"
@@ -135,3 +135,42 @@ resource "aws_ecs_task_definition" "task_definition" {
     expression = "attribute:ecs.availability-zone in [us-west-2a, us-west-2b]"
   }
 }
+
+resource "aws_iam_role_policy" "ecs_policy" {
+  name = "ecs_policy"
+  role = aws_iam_role.ecs_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:GetAuthorizationToken"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role" "ecs_role" {
+  name = "ecs_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ecs.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+
