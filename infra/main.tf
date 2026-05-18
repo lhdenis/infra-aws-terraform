@@ -18,6 +18,27 @@ module "compute" {
   public_subnet_ids  = module.networking.public_subnet_ids
   private_subnet_ids = module.networking.private_subnet_ids
 }
+
+module "database" {
+  source             = "./modules/database"
+  project_name       = var.project_name
+  environment        = var.environment
+  vpc_id             = module.networking.vpc_id
+  private_subnet_ids = module.networking.private_subnet_ids
+  sg_rds_id          = module.networking.sg_rds_id
+  db_password        = var.db_password
+}
+
+module "security" {
+  source        = "./modules/security"
+  project_name  = var.project_name
+  environment   = var.environment
+  db_password   = var.db_password
+  db_username   = "admin"
+  db_name       = "appdb"
+  rds_endpoint  = module.database.rds_endpoint
+  s3_bucket_arn = module.database.s3_bucket_arn
+}
   
   # project_name       = var.project_name
   # environment        = var.environment

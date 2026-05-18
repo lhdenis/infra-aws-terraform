@@ -41,7 +41,7 @@ resource "aws_db_subnet_group" "main" {
   }
 }
 
-resource "aws_s3_bucket" "example" {
+resource "aws_s3_bucket" "main" {
   bucket = "my-tf-test-bucket"
 
   tags = {
@@ -50,12 +50,8 @@ resource "aws_s3_bucket" "example" {
   }
 }
 
-resource "aws_s3_bucket" "example" {
-  bucket = "example"
-}
-
-resource "aws_s3_bucket_public_access_block" "example" {
-  bucket = aws_s3_bucket.example.id
+resource "aws_s3_bucket_public_access_block" "main" {
+  bucket = aws_s3_bucket.main.id
 
   block_public_acls       = true
   block_public_policy     = true
@@ -63,31 +59,38 @@ resource "aws_s3_bucket_public_access_block" "example" {
   restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_versioning" "versioning_example" {
-  bucket = aws_s3_bucket.example.id
+resource "aws_s3_bucket_versioning" "versioning_main" {
+  bucket = aws_s3_bucket.main.id
   versioning_configuration {
     status = "Enabled"
   }
 }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
-  bucket = aws_s3_bucket.mybucket.id
+resource "aws_s3_bucket_server_side_encryption_configuration" "main" {
+  bucket = aws_s3_bucket.main.id
 
   rule {
     apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.mykey.arn
-      sse_algorithm     = "aws:kms"
+      sse_algorithm     = "AES256"
     }
   }
 }
 
-resource "aws_s3_bucket_lifecycle_configuration" "example" {
-  bucket = aws_s3_bucket.bucket.bucket
+resource "aws_s3_bucket_lifecycle_configuration" "main" {
+  bucket = aws_s3_bucket.main.id
 
   rule {
-    id = "rule-1"
-
-
+    id     = "archive-old-objects"
     status = "Enabled"
+
+    transition {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+
+    transition {
+      days          = 90
+      storage_class = "GLACIER"
+    }
   }
 }
