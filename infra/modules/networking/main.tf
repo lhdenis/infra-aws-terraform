@@ -111,7 +111,7 @@ resource "aws_security_group" "alb" {
 # Security Group — ECS (conteneurs)
 resource "aws_security_group" "ecs" {
   name        = "${var.project_name}-sg-ecs-${var.environment}"
-  description = "Autorise le trafic entrant uniquement depuis l'ALB"
+  description = "Security group for ECS tasks"
   vpc_id      = aws_vpc.main.id
 
   ingress {

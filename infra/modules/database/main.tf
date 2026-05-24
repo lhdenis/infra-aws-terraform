@@ -11,7 +11,7 @@ resource "aws_db_instance" "main" {
   multi_az             = false
 
   # backup automatique
-  backup_retention_period = 7
+  backup_retention_period = 0
   backup_window           = "03:00-04:00"
   maintenance_window      = "Mon:04:00-Mon:05:00"
 
@@ -33,6 +33,7 @@ resource "aws_db_instance" "main" {
 resource "aws_db_subnet_group" "main" {
   name       = "main"
   subnet_ids = var.private_subnet_ids
+  # vpc_id = var.aws_vpc.main.id
 
   tags = {
     Name        = "${var.project_name}-db-subnet-group-${var.environment}"
@@ -42,7 +43,7 @@ resource "aws_db_subnet_group" "main" {
 }
 
 resource "aws_s3_bucket" "main" {
-  bucket = "my-tf-test-bucket"
+  bucket = "amzn-s3-lhdenis"
 
   tags = {
     Name        = "My bucket"

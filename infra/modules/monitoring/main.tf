@@ -220,6 +220,7 @@ resource "aws_cloudwatch_dashboard" "main" {
       {
         type = "metric"
         properties = {
+          region  = "eu-west-3"
           title  = "ECS — CPU & Mémoire"
           period = 300
           metrics = [
@@ -231,6 +232,7 @@ resource "aws_cloudwatch_dashboard" "main" {
       {
         type = "metric"
         properties = {
+          region  = "eu-west-3"
           title  = "RDS — CPU & Connexions"
           period = 300
           metrics = [
@@ -242,6 +244,7 @@ resource "aws_cloudwatch_dashboard" "main" {
       {
         type = "metric"
         properties = {
+          region  = "eu-west-3"
           title  = "ALB — Latence & Erreurs 5xx"
           period = 60
           metrics = [

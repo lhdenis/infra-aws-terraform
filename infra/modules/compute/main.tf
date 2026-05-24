@@ -19,9 +19,10 @@ resource "aws_lb" "main" {
 resource "aws_lb_listener" "lb-listener" {
   load_balancer_arn = aws_lb.main.arn
   port              = "443"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = "arn:aws:iam::187416307283:server-certificate/test_cert_rab3wuqwgja25ct3n4jdj2tzu4"
+  protocol          = "HTTP"
+  // on est en HTTP
+  // ssl_policy        = "ELBSecurityPolicy-2016-08"
+  // certificate_arn   = "arn:aws:acm:eu-west-3:109684671173:certificate/60aa2e19-a750-4879-95ac-a7edbf2b4435"
 
   default_action {
     type             = "forward"
@@ -51,11 +52,17 @@ resource "aws_ecs_cluster" "main" {
 }
 
 resource "aws_ecs_service" "main" {
-  name            = "ecs-service"
+  name            = "my-container"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.task_definition.arn
   desired_count   = 3
   depends_on      = [aws_iam_role_policy.ecs_policy]
+
+   network_configuration {
+    subnets          = var.private_subnet_ids
+    security_groups  = [var.sg_ecs_id]
+    assign_public_ip = false
+  }
 
   ordered_placement_strategy {
     type  = "binpack"
@@ -64,7 +71,7 @@ resource "aws_ecs_service" "main" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.main.arn
-    container_name   = "mc"
+    container_name   = "my-container"
     container_port   = 8080
   }
 
@@ -74,51 +81,19 @@ resource "aws_ecs_service" "main" {
   }
 }
 
-# service_connect_configuration {
-#     enabled   = true
-#     namespace = aws_service_discovery_http_namespace.example.arn
-
-#     log_configuration {
-#       log_driver = "awslogs"
-#       options = {
-#         "awslogs-group"         = aws_cloudwatch_log_group.example.name
-#         "awslogs-region"        = data.aws_region.current.region
-#         "awslogs-stream-prefix" = "service-connect"
-#       }
-#     }
-
-#     access_log_configuration {
-#       format                   = "TEXT"
-#       include_query_parameters = "ENABLED"
-#     }
-
-#     service {
-#       port_name      = "http"
-#       discovery_name = "example"
-
-#       client_alias {
-#         dns_name = "example"
-#         port     = 8080
-#       }
-#     }
-#   }
-
-# resource "aws_cloudwatch_log_group" "example" {
-#   name = "/ecs/example/service-connect"
-# }
-
 resource "aws_ecs_task_definition" "task_definition" {
   family = "task_definition"
+  network_mode = "awsvpc"
   container_definitions = jsonencode([
     {
-      name      = "task_definition"
+      name      = "my-container"
       image     = "nginx:latest"
       cpu       = 10
       memory    = 512
       essential = true
       portMappings = [
         {
-          containerPort = 80
+          containerPort = 8080
           hostPort      = 8080
         }
       ]

@@ -13,3 +13,8 @@ output "rds_secret_arn" {
   value       = module.security.rds_secret_arn
   sensitive   = true
 }
+
+output "vpc_id" {
+  description = "vpc crée dans aws"
+  value       = module.networking.vpc_id
+}
