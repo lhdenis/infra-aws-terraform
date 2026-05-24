@@ -2,7 +2,7 @@
 ///////////////////////////// ALB ////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-resource "aws_lb" "lb" {
+resource "aws_lb" "main" {
   name               = "lb"
   internal           = false
   load_balancer_type = "application"
@@ -17,7 +17,7 @@ resource "aws_lb" "lb" {
 }
 
 resource "aws_lb_listener" "lb-listener" {
-  load_balancer_arn = aws_lb.lb.arn
+  load_balancer_arn = aws_lb.main.arn
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
@@ -25,11 +25,11 @@ resource "aws_lb_listener" "lb-listener" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.target_group.arn
+    target_group_arn = aws_lb_target_group.main.arn
   }
 }
 
-resource "aws_lb_target_group" "target_group" {
+resource "aws_lb_target_group" "main" {
   name        = "target-group"
   port        = 80
   protocol    = "HTTP"
@@ -41,7 +41,7 @@ resource "aws_lb_target_group" "target_group" {
 ///////////////////////////// ECS ////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-resource "aws_ecs_cluster" "ecs-cluster" {
+resource "aws_ecs_cluster" "main" {
   name = "white-hart"
 
   setting {
@@ -50,9 +50,9 @@ resource "aws_ecs_cluster" "ecs-cluster" {
   }
 }
 
-resource "aws_ecs_service" "ecs_service" {
+resource "aws_ecs_service" "main" {
   name            = "ecs-service"
-  cluster         = aws_ecs_cluster.ecs-cluster.id
+  cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.task_definition.arn
   desired_count   = 3
   depends_on      = [aws_iam_role_policy.ecs_policy]
@@ -63,7 +63,7 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.target_group.arn
+    target_group_arn = aws_lb_target_group.main.arn
     container_name   = "mc"
     container_port   = 8080
   }
@@ -172,5 +172,16 @@ resource "aws_iam_role" "ecs_role" {
       },
     ]
   })
+}
+
+# CloudWatch Log Group — centralise les logs des conteneurs
+resource "aws_cloudwatch_log_group" "ecs" {
+  name              = "/ecs/${var.project_name}-${var.environment}"
+  retention_in_days = 7
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+  }
 }
 

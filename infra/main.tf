@@ -12,6 +12,9 @@ module "networking" {
 
 module "compute" {
   source             = "./modules/compute"
+  project_name       = var.project_name
+  environment        = var.environment
+  aws_region         = var.aws_region
   vpc_id             = module.networking.vpc_id
   sg_alb_id          = module.networking.sg_alb_id
   sg_ecs_id          = module.networking.sg_ecs_id
