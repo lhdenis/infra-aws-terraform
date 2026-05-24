@@ -39,9 +39,17 @@ module "security" {
   rds_endpoint  = module.database.rds_endpoint
   s3_bucket_arn = module.database.s3_bucket_arn
 }
-  
-  # project_name       = var.project_name
-  # environment        = var.environment
-  # aws_region         = var.aws_region
-  # vpc_id             = module.networking.vpc_id
+
+module "monitoring" {
+  source                  = "./modules/monitoring"
+  project_name            = var.project_name
+  environment             = var.environment
+  alert_email             = var.alert_email
+  ecs_cluster_name        = module.compute.ecs_cluster_name
+  ecs_service_name        = module.compute.ecs_service_name
+  rds_identifier          = "${var.project_name}-db-${var.environment}"
+  alb_arn_suffix          = module.compute.alb_arn_suffix
+  target_group_arn_suffix = module.compute.target_group_arn_suffix
+}
+
  
