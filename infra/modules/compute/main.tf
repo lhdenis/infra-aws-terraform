@@ -18,7 +18,7 @@ resource "aws_lb" "main" {
 
 resource "aws_lb_listener" "lb-listener" {
   load_balancer_arn = aws_lb.main.arn
-  port              = "443"
+  port              = "80"
   protocol          = "HTTP"
   // on est en HTTP
   // ssl_policy        = "ELBSecurityPolicy-2016-08"
@@ -31,8 +31,14 @@ resource "aws_lb_listener" "lb-listener" {
 }
 
 resource "aws_lb_target_group" "main" {
+  health_check {
+    path                = "/health"
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+    interval            = 30
+  }
   name        = "target-group"
-  port        = 80
+  port        = 8080
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = var.vpc_id
@@ -82,14 +88,19 @@ resource "aws_ecs_service" "main" {
 }
 
 resource "aws_ecs_task_definition" "task_definition" {
+
   family = "task_definition"
   network_mode = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  execution_role_arn = aws_iam_role.ecs_role.arn
+  cpu       = 256
+  memory    = 512
+
   container_definitions = jsonencode([
     {
       name      = "my-container"
-      image     = "nginx:latest"
-      cpu       = 10
-      memory    = 512
+      image     = var.container_image
+      
       essential = true
       portMappings = [
         {
@@ -99,36 +110,6 @@ resource "aws_ecs_task_definition" "task_definition" {
       ]
     }
   ])
-
-  volume {
-    name      = "service-storage"
-    host_path = "/ecs/service-storage"
-  }
-
-  placement_constraints {
-    type       = "memberOf"
-    expression = "attribute:ecs.availability-zone in [us-west-2a, us-west-2b]"
-  }
-}
-
-resource "aws_iam_role_policy" "ecs_policy" {
-  name = "ecs_policy"
-  role = aws_iam_role.ecs_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "ecr:BatchGetImage",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:GetAuthorizationToken"
-        ]
-        Effect   = "Allow"
-        Resource = "*"
-      },
-    ]
-  })
 }
 
 resource "aws_iam_role" "ecs_role" {
@@ -142,11 +123,16 @@ resource "aws_iam_role" "ecs_role" {
         Effect = "Allow"
         Sid    = ""
         Principal = {
-          Service = "ecs.amazonaws.com"
+          Service = "ecs-tasks.amazonaws.com"
         }
       },
     ]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
+  role       = aws_iam_role.ecs_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 # CloudWatch Log Group — centralise les logs des conteneurs
@@ -160,3 +146,26 @@ resource "aws_cloudwatch_log_group" "ecs" {
   }
 }
 
+# Auto Scaling
+resource "aws_appautoscaling_target" "ecs" {
+  max_capacity       = 4
+  min_capacity       = 1
+  resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.main.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "cpu" {
+  name               = "${var.project_name}-autoscaling-cpu-${var.environment}"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value = 70.0
+  }
+}
