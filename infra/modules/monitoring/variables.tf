@@ -9,6 +9,7 @@ variable "environment" {
 variable "alert_email" {
   description = "Email pour recevoir les alertes CloudWatch"
   type        = string
+  default     = "aws11358lhdenis@gmail.com"
 }
 
 variable "ecs_cluster_name" {
