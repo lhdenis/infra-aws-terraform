@@ -79,6 +79,7 @@ Each component has its own **Security Group** with strict rules:
 This layered approach ensures that even if one component is 
 compromised, lateral movement is limited.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 ---
 
 ### 2. Compute Layer — ECS Fargate
@@ -105,6 +106,7 @@ allowing new tasks to start before saturation is reached.
 
 The container image is pulled from **Docker Hub** at task startup.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 ---
 
 ### 3. Database Layer — RDS MySQL
@@ -124,6 +126,7 @@ In the dev and staging environments, Multi-AZ is disabled to
 stay within Free Tier limits. In production it would be enabled 
 for high availability across two Availability Zones.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 ---
 
 ### 4. Storage — S3
@@ -152,6 +155,7 @@ It is configured with:
 - Lifecycle rules to transition old objects to STANDARD_IA 
   after 30 days and GLACIER after 90 days
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 ---
 
 ### 5. Security — IAM & Secrets Manager
@@ -187,6 +191,7 @@ The ECS task retrieves the secret at runtime through the
 Task Role. The password never appears in Terraform logs, 
 GitHub Actions logs, or environment variables.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 ---
 
 ### 6. Monitoring — CloudWatch & SNS
