@@ -284,6 +284,7 @@ without duplicating any Terraform code.
 
 ### 9. Infrastructure Overview
 
+```
 Internet
 ↓
 Internet Gateway
@@ -298,12 +299,13 @@ ECS Fargate (public subnets — assign_public_ip)
 CloudWatch — monitors ECS, RDS, ALB → SNS alerts
 GitHub Actions — terraform plan + apply on every push to main
 S3 + DynamoDB — Terraform state backend
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 ---
 
 ### 10. Project Structure
-
+```
 aws-infra/
 ├── main.tf                   # module orchestration
 ├── variables.tf              # global variables + per-env config
@@ -320,7 +322,7 @@ aws-infra/
 ├── database/              # RDS MySQL, S3
 ├── security/              # IAM, Secrets Manager
 └── monitoring/            # CloudWatch, SNS
-
+```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 ---
 
