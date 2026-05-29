@@ -50,6 +50,8 @@ Code principles.
 
 ## Project Architecture
 
+![Local architecture](https://github.com/lhdenis/infra-aws-terraform/aws_architecture.png)
+
 ### 1. Network Layer
 
 The network is built around a **VPC (Virtual Private Cloud)** 
