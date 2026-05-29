@@ -50,7 +50,7 @@ Code principles.
 
 ## Project Architecture
 
-![Local architecture](https://github.com/lhdenis/infra-aws-terraform/blob/main/aws_architecture.png)
+![Local architecture](https://github.com/lhdenis/infra-aws-terraform/blob/main/aws_architecure.png)
 
 ### 1. Network Layer
 
