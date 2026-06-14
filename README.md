@@ -272,10 +272,12 @@ The infrastructure supports three environments managed through
 
 Each workspace maintains its own isolated Terraform state:
 
+```
 S3 bucket (tfstate)
 ├── env:/dev/terraform.tfstate
 ├── env:/staging/terraform.tfstate
 └── env:/prod/terraform.tfstate
+```
 
 A single configuration map drives all environment differences — 
 CPU, memory, instance count, database class, and Multi-AZ — 
